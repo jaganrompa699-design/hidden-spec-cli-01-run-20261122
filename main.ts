@@ -778,8 +778,12 @@ function run(args: string[]): { code: number; out: string[] } {
     seenPairs.add(pk);
     if (o === n) continue;
     if (covered.has(o) || covered.has(n)) continue;
-    if (before(o) === null || after(n) === null) continue;
-    if (!changed.has(o) || !changed.has(n)) continue;
+    // SPEC section 2: an R line only when <old> existed before the patch and
+    // does not after it, and <new> did not exist before it and does after it.
+    // A later edit may re-create <old> or delete <new>, and then each path
+    // takes its own A, D or M line below instead.
+    if (before(o) === null || after(o) !== null) continue;
+    if (before(n) !== null || after(n) === null) continue;
     rows.push({ key: n, line: `R ${o} -> ${n}` });
     covered.add(o);
     covered.add(n);
